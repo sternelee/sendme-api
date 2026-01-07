@@ -1,13 +1,23 @@
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { EventHandlerRequest, H3Event } from 'h3'
-import { drizzle } from 'drizzle-orm/node-postgres'
+
+import { drizzle } from 'drizzle-orm/d1'
 
 import * as schema from '../database/schema'
-import { getPgPool } from './drivers'
 import { runtimeConfig } from './runtimeConfig'
 
 const createDB = (dbSchema?: typeof schema) => {
-  return drizzle({ client: getPgPool(), schema: dbSchema })
+  // Get D1 binding from Cloudflare Workers context
+  // @ts-expect-error globalThis.__env__ is Cloudflare Workers binding
+  const d1Database =
+    process.env.D1_DATABASE ||
+    globalThis.__env__?.D1_DATABASE ||
+    globalThis.D1_DATABASE
+  if (!d1Database) {
+    throw new Error(
+      'D1_DATABASE binding not found. Make sure D1 is configured in wrangler.toml'
+    )
+  }
+  return drizzle(d1Database, { schema: dbSchema })
 }
 
 let db: ReturnType<typeof createDB>
@@ -24,7 +34,7 @@ export const getDB = () => {
 }
 
 // use db with schema
-export const useDB = async (event?: H3Event<EventHandlerRequest>): Promise<NodePgDatabase<typeof schema>> => {
+export const useDB = async (event?: H3Event<EventHandlerRequest>) => {
   // If the event has a context with a db property, return it
   if (event && event.context.db) {
     return event.context.db

@@ -65,7 +65,11 @@ export class FileService {
     const fileType = getFileTypeFromMimeType(mimeType)
 
     try {
-      const { path, url } = await this.storage.upload(fileBuffer, fileName, mimeType)
+      const { path, url } = await this.storage.upload(
+        fileBuffer,
+        fileName,
+        mimeType
+      )
 
       const fileData = {
         id: fileId,
@@ -81,7 +85,10 @@ export class FileService {
         isActive: true
       }
 
-      const [fileRecord] = await db.insert(fileTable).values(fileData).returning()
+      const [fileRecord] = await db
+        .insert(fileTable)
+        .values(fileData)
+        .returning()
       if (!fileRecord) {
         throw createError({
           statusCode: 500,
@@ -131,14 +138,23 @@ export class FileService {
   async getFile(id: string): Promise<FileRecord | null> {
     const db = await useDB()
     try {
-      const [fileRecord] = await db.select().from(fileTable).where(eq(fileTable.id, id)).limit(1)
+      const [fileRecord] = await db
+        .select()
+        .from(fileTable)
+        .where(eq(fileTable.id, id))
+        .limit(1)
       return fileRecord || null
     } catch {
       return null
     }
   }
 
-  async deleteFile(id: string, userId?: string, ipAddress?: string, userAgent?: string): Promise<boolean> {
+  async deleteFile(
+    id: string,
+    userId?: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<boolean> {
     const db = await useDB()
     const file = await this.getFile(id)
 
@@ -174,11 +190,18 @@ export class FileService {
     return true
   }
 
-  async getFilesByUser(userId: string, limit = 50, offset = 0): Promise<FileRecord[]> {
+  async getFilesByUser(
+    userId: string,
+    limit = 50,
+    offset = 0
+  ): Promise<FileRecord[]> {
     const db = await useDB()
-    return await db.select()
+    return await db
+      .select()
       .from(fileTable)
-      .where(and(eq(fileTable.uploadedBy, userId), eq(fileTable.isActive, true)))
+      .where(
+        and(eq(fileTable.uploadedBy, userId), eq(fileTable.isActive, true))
+      )
       .orderBy(desc(fileTable.createdAt))
       .limit(limit)
       .offset(offset)

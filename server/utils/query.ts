@@ -1,5 +1,5 @@
 import type { SQL } from 'drizzle-orm'
-import type { PgColumn, PgSelect } from 'drizzle-orm/pg-core'
+import type { SQLiteColumn, SQLiteSelect } from 'drizzle-orm/sqlite-core'
 import { and, eq, gte, ilike, inArray, lte } from 'drizzle-orm'
 import { z } from 'zod'
 
@@ -30,7 +30,7 @@ export const filterSchema = z.array(
 
 export function processFilters(
   filters: z.infer<typeof filterSchema>,
-  columns: Record<string, PgColumn>
+  columns: Record<string, SQLiteColumn>
 ): SQL[] {
   const sqlFilters: SQL[] = []
 
@@ -46,17 +46,11 @@ export function processFilters(
           )!
         )
       } else if (filter.op === 'in') {
-        sqlFilters.push(
-          inArray(column, filter.v)
-        )
+        sqlFilters.push(inArray(column, filter.v))
       } else if (filter.op === 'like') {
-        sqlFilters.push(
-          ilike(column, `%${filter.v}%`)
-        )
+        sqlFilters.push(ilike(column, `%${filter.v}%`))
       } else if (filter.op === 'eq') {
-        sqlFilters.push(
-          eq(column, filter.v)
-        )
+        sqlFilters.push(eq(column, filter.v))
       }
     }
   }
@@ -64,9 +58,6 @@ export function processFilters(
   return sqlFilters
 }
 
-export function withFilters<T extends PgSelect>(
-  qb: T,
-  filters: SQL[]
-) {
+export function withFilters<T extends SQLiteSelect>(qb: T, filters: SQL[]) {
   return filters.length ? qb.where(and(...filters)) : qb
 }

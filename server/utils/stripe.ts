@@ -56,67 +56,68 @@ const addPaymentLog = async (action: string, subscription: Subscription) => {
   })
 }
 
-export const setupStripe = () => stripe({
-  stripeClient: createStripeClient(),
-  stripeWebhookSecret: runtimeConfig.stripeWebhookSecret,
-  createCustomerOnSignUp: runtimeConfig.public.payment == 'stripe',
-  subscription: {
-    enabled: true,
-    plans: [
-      {
-        name: 'pro-monthly',
-        priceId: runtimeConfig.stripePriceIdProMonth,
-        freeTrial: {
-          days: 14,
-          onTrialStart: async (subscription) => {
-            // Called when a trial starts
-            await addPaymentLog('trial_start', subscription)
-          },
-          onTrialEnd: async ({ subscription }) => {
-            // Called when a trial ends
-            await addPaymentLog('trial_end', subscription)
-          },
-          onTrialExpired: async (subscription) => {
-            // Called when a trial expires without conversion
-            await addPaymentLog('trial_expired', subscription)
+export const setupStripe = () =>
+  stripe({
+    stripeClient: createStripeClient(),
+    stripeWebhookSecret: runtimeConfig.stripeWebhookSecret,
+    createCustomerOnSignUp: runtimeConfig.public.payment == 'stripe',
+    subscription: {
+      enabled: true,
+      plans: [
+        {
+          name: 'pro-monthly',
+          priceId: runtimeConfig.stripePriceIdProMonth,
+          freeTrial: {
+            days: 14,
+            onTrialStart: async (subscription) => {
+              // Called when a trial starts
+              await addPaymentLog('trial_start', subscription)
+            },
+            onTrialEnd: async ({ subscription }) => {
+              // Called when a trial ends
+              await addPaymentLog('trial_end', subscription)
+            },
+            onTrialExpired: async (subscription) => {
+              // Called when a trial expires without conversion
+              await addPaymentLog('trial_expired', subscription)
+            }
+          }
+        },
+        {
+          name: 'pro-yearly',
+          priceId: runtimeConfig.stripePriceIdProYear,
+          freeTrial: {
+            days: 14,
+            onTrialStart: async (subscription) => {
+              // Called when a trial starts
+              await addPaymentLog('trial_start', subscription)
+            },
+            onTrialEnd: async ({ subscription }) => {
+              // Called when a trial ends
+              await addPaymentLog('trial_end', subscription)
+            },
+            onTrialExpired: async (subscription) => {
+              // Called when a trial expires without conversion
+              await addPaymentLog('trial_expired', subscription)
+            }
           }
         }
+      ],
+      onSubscriptionComplete: async ({ subscription }) => {
+        // Called when a subscription is successfully created
+        await addPaymentLog('subscription_created', subscription)
       },
-      {
-        name: 'pro-yearly',
-        priceId: runtimeConfig.stripePriceIdProYear,
-        freeTrial: {
-          days: 14,
-          onTrialStart: async (subscription) => {
-            // Called when a trial starts
-            await addPaymentLog('trial_start', subscription)
-          },
-          onTrialEnd: async ({ subscription }) => {
-            // Called when a trial ends
-            await addPaymentLog('trial_end', subscription)
-          },
-          onTrialExpired: async (subscription) => {
-            // Called when a trial expires without conversion
-            await addPaymentLog('trial_expired', subscription)
-          }
-        }
+      onSubscriptionUpdate: async ({ subscription }) => {
+        // Called when a subscription is updated
+        await addPaymentLog('subscription_updated', subscription)
+      },
+      onSubscriptionCancel: async ({ subscription }) => {
+        // Called when a subscription is canceled
+        await addPaymentLog('subscription_canceled', subscription)
+      },
+      onSubscriptionDeleted: async ({ subscription }) => {
+        // Called when a subscription is deleted
+        await addPaymentLog('subscription_deleted', subscription)
       }
-    ],
-    onSubscriptionComplete: async ({ subscription }) => {
-      // Called when a subscription is successfully created
-      await addPaymentLog('subscription_created', subscription)
-    },
-    onSubscriptionUpdate: async ({ subscription }) => {
-      // Called when a subscription is updated
-      await addPaymentLog('subscription_updated', subscription)
-    },
-    onSubscriptionCancel: async ({ subscription }) => {
-      // Called when a subscription is canceled
-      await addPaymentLog('subscription_canceled', subscription)
-    },
-    onSubscriptionDeleted: async ({ subscription }) => {
-      // Called when a subscription is deleted
-      await addPaymentLog('subscription_deleted', subscription)
     }
-  }
-})
+  })

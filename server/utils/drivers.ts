@@ -1,38 +1,6 @@
-import type { Hyperdrive } from '@cloudflare/workers-types'
 import Redis from 'ioredis'
-import pg from 'pg'
 import { Resend } from 'resend'
 import { runtimeConfig } from './runtimeConfig'
-
-const getDatabaseUrl = () => {
-// @ts-expect-error globalThis.__env__ is not defined
-  const hyperdrive = (process.env.HYPERDRIVE || globalThis.__env__?.HYPERDRIVE || globalThis.HYPERDRIVE) as Hyperdrive | undefined
-  if (runtimeConfig.preset == 'node-server') {
-    return runtimeConfig.databaseUrl
-  } else {
-    return hyperdrive?.connectionString || runtimeConfig.databaseUrl
-  }
-}
-
-const createPgPool = () => new pg.Pool({
-  connectionString: getDatabaseUrl(),
-  max: 90,
-  idleTimeoutMillis: 30000
-})
-
-let pgPool: pg.Pool
-
-// PG Pool
-export const getPgPool = () => {
-  if (runtimeConfig.preset == 'node-server') {
-    if (!pgPool) {
-      pgPool = createPgPool()
-    }
-    return pgPool
-  } else {
-    return createPgPool()
-  }
-}
 
 // Cache Client
 let redisClient: Redis | undefined
@@ -64,7 +32,8 @@ export const cacheClient = {
   },
   set: async (key: string, value: string, ttl: number | undefined) => {
     const client = getRedisClient()
-    const stringValue = typeof value === 'string' ? value : JSON.stringify(value)
+    const stringValue =
+      typeof value === 'string' ? value : JSON.stringify(value)
     if (client) {
       if (ttl) {
         await client.set(key, stringValue, 'EX', ttl)

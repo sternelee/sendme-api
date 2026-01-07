@@ -8,7 +8,13 @@ import type { Organization } from '@polar-sh/sdk/models/components/organization.
 import type { Product } from '@polar-sh/sdk/models/components/product.js'
 import type { Refund } from '@polar-sh/sdk/models/components/refund.js'
 import type { Subscription } from '@polar-sh/sdk/models/components/subscription.js'
-import { checkout, polar, portal, usage, webhooks } from '@polar-sh/better-auth'
+import {
+  checkout,
+  polar,
+  portal,
+  usage,
+  webhooks
+} from '@polar-sh/better-auth'
 import { Polar } from '@polar-sh/sdk'
 import { eq } from 'drizzle-orm'
 import { user as userTable } from '../database/schema'
@@ -23,7 +29,9 @@ const createPolarClient = () => {
 
 export const ensurePolarCustomer = async (user: User) => {
   const client = createPolarClient()
-  const { result: existingCustomers } = await client.customers.list({ email: user.email })
+  const { result: existingCustomers } = await client.customers.list({
+    email: user.email
+  })
   const existingCustomer = existingCustomers.items[0]
   if (existingCustomer) {
     if (existingCustomer.externalId !== user.id) {
@@ -45,7 +53,20 @@ export const ensurePolarCustomer = async (user: User) => {
   }
 }
 
-const addPaymentLog = async (hookType: string, data: Customer | Checkout | Benefit | BenefitGrantWebhook | Order | Organization | Product | Refund | Subscription | CustomerState) => {
+const addPaymentLog = async (
+  hookType: string,
+  data:
+    | Customer
+    | Checkout
+    | Benefit
+    | BenefitGrantWebhook
+    | Order
+    | Organization
+    | Product
+    | Refund
+    | Subscription
+    | CustomerState
+) => {
   if (hookType.startsWith('checkout.')) {
     const checkout = data as Checkout
     await logAuditEvent({
@@ -53,16 +74,20 @@ const addPaymentLog = async (hookType: string, data: Customer | Checkout | Benef
       category: 'payment',
       action: `polar:${hookType}:${checkout.product.name}`,
       targetType: 'polarExternalId',
-      targetId: checkout.customerExternalId || checkout.metadata.email as string,
+      targetId:
+        checkout.customerExternalId || (checkout.metadata.email as string),
       status: 'success'
     })
   } else if (hookType.startsWith('customer.')) {
     const customer = data as Customer
     if (hookType == 'customer.created' && customer.externalId) {
       const db = await useDB()
-      await db.update(userTable).set({
-        polarCustomerId: customer.id
-      }).where(eq(userTable.id, customer.externalId))
+      await db
+        .update(userTable)
+        .set({
+          polarCustomerId: customer.id
+        })
+        .where(eq(userTable.id, customer.externalId))
     }
     await logAuditEvent({
       userId: customer.externalId || undefined,
@@ -85,33 +110,34 @@ const addPaymentLog = async (hookType: string, data: Customer | Checkout | Benef
   }
 }
 
-export const setupPolar = () => polar({
-  client: createPolarClient(),
-  createCustomerOnSignUp: runtimeConfig.public.payment == 'polar',
-  use: [
-    checkout({
-      products: [
-        {
-          productId: runtimeConfig.polarProductIdProMonth,
-          slug: 'pro-monthly'
-        },
-        {
-          productId: runtimeConfig.polarProductIdProYear,
-          slug: 'pro-yearly'
+export const setupPolar = () =>
+  polar({
+    client: createPolarClient(),
+    createCustomerOnSignUp: runtimeConfig.public.payment == 'polar',
+    use: [
+      checkout({
+        products: [
+          {
+            productId: runtimeConfig.polarProductIdProMonth,
+            slug: 'pro-monthly'
+          },
+          {
+            productId: runtimeConfig.polarProductIdProYear,
+            slug: 'pro-yearly'
+          }
+        ],
+        successUrl: '/',
+        authenticatedUsersOnly: true
+      }),
+      portal(),
+      usage(),
+      webhooks({
+        // On Polar Organization Settings: {APP_URL}/api/auth/polar/webhooks
+        secret: runtimeConfig.polarWebhookSecret,
+        onPayload: async (payload) => {
+          // Catch-all for all events
+          await addPaymentLog(payload.type || '', payload.data)
         }
-      ],
-      successUrl: '/',
-      authenticatedUsersOnly: true
-    }),
-    portal(),
-    usage(),
-    webhooks({
-      // On Polar Organization Settings: {APP_URL}/api/auth/polar/webhooks
-      secret: runtimeConfig.polarWebhookSecret,
-      onPayload: async (payload) => {
-        // Catch-all for all events
-        await addPaymentLog(payload.type || '', payload.data)
-      }
-    })
-  ]
-})
+      })
+    ]
+  })

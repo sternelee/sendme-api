@@ -2,7 +2,11 @@ import type { Buffer } from 'node:buffer'
 
 export interface StorageProvider {
   name: string
-  upload: (file: Buffer, fileName: string, mimeType: string) => Promise<{ path: string, url?: string }>
+  upload: (
+    file: Buffer,
+    fileName: string,
+    mimeType: string
+  ) => Promise<{ path: string, url?: string }>
   delete: (path: string) => Promise<void>
   getUrl: (path: string) => string
   exists: (path: string) => Promise<boolean>

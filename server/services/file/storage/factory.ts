@@ -2,13 +2,18 @@ import type { FileManagerConfig, StorageProvider } from '../types'
 import { LocalStorageProvider } from './local'
 import { S3CompatibleStorageProvider } from './s3-compatible'
 
-export async function createStorageProvider(config: FileManagerConfig['storage']): Promise<StorageProvider> {
+export async function createStorageProvider(
+  config: FileManagerConfig['storage']
+): Promise<StorageProvider> {
   switch (config.provider) {
     case 'local':
       if (!config.local) {
         throw new Error('Local storage configuration is required')
       }
-      return new LocalStorageProvider(config.local.uploadDir, config.local.publicPath)
+      return new LocalStorageProvider(
+        config.local.uploadDir,
+        config.local.publicPath
+      )
 
     case 's3':
       if (!config.s3) {

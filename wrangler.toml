@@ -1,0 +1,22 @@
+name = "sendme-api"
+compatibility_date = "2024-01-01"
+
+# D1 Database Binding
+[[d1_databases]]
+binding = "D1_DATABASE"
+database_name = "sendme-db"
+database_id = "%NUXT_D1_DATABASE_ID%"
+
+# R2 Binding for file storage
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "%NUXT_CF_R2_BUCKET_NAME%"
+
+# KV Binding for caching
+[[kv_namespaces]]
+binding = "KV_CACHE"
+id = "%NUXT_CF_KV_CACHE_ID%"
+
+# Environment variables (can also be set via Cloudflare dashboard)
+[vars]
+# Add any static environment variables here

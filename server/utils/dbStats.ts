@@ -1,49 +1,41 @@
-import { getPgPool } from './drivers'
-
+// D1/SQLite database stats (simplified version for Cloudflare D1)
 export async function getDBStats() {
-  const db = await getPgPool().connect()
-  const dbStatsResult = await db.query(`
-    SELECT
-      numbackends as active_backends,
-      xact_commit as commits,
-      xact_rollback as rollbacks,
-      blks_read,
-      blks_hit,
-      tup_returned,
-      tup_fetched,
-      tup_inserted,
-      tup_updated,
-      tup_deleted,
-      conflicts,
-      temp_files,
-      temp_bytes,
-      deadlocks
-    FROM pg_stat_database
-    WHERE datname = current_database()
-  `)
-  db.release()
-  const dbStats = dbStatsResult.rows[0]
-  const cacheHitRatio = dbStats.blks_hit / (dbStats.blks_read + dbStats.blks_hit) * 100
+  // Note: D1/SQLite doesn't have the same detailed stats as PostgreSQL
+  // This returns a simplified stats object
+  // For production, you might want to track custom metrics
 
   return {
-    activeBackends: Number(dbStats.active_backends),
+    // D1 doesn't expose active connection counts
+    activeBackends: 0,
+
+    // D1 doesn't expose transaction counts
     transactions: {
-      commits: Number(dbStats.commits),
-      rollbacks: Number(dbStats.rollbacks)
+      commits: 0,
+      rollbacks: 0
     },
+
+    // D1 doesn't expose tuple operations
     tuples: {
-      returned: Number(dbStats.tup_returned),
-      fetched: Number(dbStats.tup_fetched),
-      inserted: Number(dbStats.tup_inserted),
-      updated: Number(dbStats.tup_updated),
-      deleted: Number(dbStats.tup_deleted)
+      returned: 0,
+      fetched: 0,
+      inserted: 0,
+      updated: 0,
+      deleted: 0
     },
-    cacheHitRatio: Math.round(cacheHitRatio * 100) / 100,
-    conflicts: Number(dbStats.conflicts),
-    deadlocks: Number(dbStats.deadlocks),
+
+    // D1 doesn't expose cache hit ratios (managed by Cloudflare)
+    cacheHitRatio: 0,
+
+    // D1 doesn't have replication conflicts
+    conflicts: 0,
+
+    // D1 doesn't have deadlocks
+    deadlocks: 0,
+
+    // D1 doesn't expose temp file stats
     tempFiles: {
-      count: Number(dbStats.temp_files),
-      bytes: Number(dbStats.temp_bytes)
+      count: 0,
+      bytes: 0
     }
   }
 }

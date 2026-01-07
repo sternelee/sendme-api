@@ -18,6 +18,8 @@ export default defineEventHandler(async (event) => {
       hour12: false
     })
     // Access Log
-    console.log(`[${timestamp}] ${method} ${url} ${statusCode} - ${duration}ms`)
+    console.log(
+      `[${timestamp}] ${method} ${url} ${statusCode} - ${duration}ms`
+    )
   })
 })

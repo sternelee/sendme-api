@@ -1,6 +1,6 @@
-import type { PgColumn } from 'drizzle-orm/pg-core'
+import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { getTableColumns, sql } from 'drizzle-orm'
-import { PgTable } from 'drizzle-orm/pg-core'
+import { SQLiteTable } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
 import * as schema from '~~/server/database/schema'
 import { isValidTable } from '~~/server/utils/db'
@@ -49,7 +49,7 @@ export default eventHandler(async (event) => {
   }
 
   const table = schema[tableName]
-  if (!(table instanceof PgTable)) {
+  if (!(table instanceof SQLiteTable)) {
     throw createError(
       {
         statusCode: 400,
@@ -73,7 +73,7 @@ export default eventHandler(async (event) => {
   const db = await useDB(event)
 
   const columnKey = columnName as keyof typeof columns
-  const column = table[columnKey] as PgColumn
+  const column = table[columnKey] as SQLiteColumn
   const countQuery = db.select({ column, count: sql<number>`cast(count(*) as int)` })
     .from(table)
     .groupBy(column)

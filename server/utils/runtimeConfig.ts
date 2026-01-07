@@ -1,5 +1,8 @@
 import type { NitroRuntimeConfig } from 'nitropack/types'
-import type { FileManagerConfig, StorageProviderType } from '../services/file/types'
+import type {
+  FileManagerConfig,
+  StorageProviderType
+} from '../services/file/types'
 import { config } from 'dotenv'
 
 declare module '@nuxt/schema' {
@@ -34,16 +37,17 @@ export const generateRuntimeConfig = () => ({
   googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET,
   // DB
   redisUrl: process.env.NUXT_REDIS_URL,
-  databaseUrl: process.env.NUXT_DATABASE_URL,
   // File
   fileManager: {
     storage: {
-      provider: process.env.NUXT_APP_STORAGE as StorageProviderType || 'r2',
-      local: { // provider: 'local'
+      provider: (process.env.NUXT_APP_STORAGE as StorageProviderType) || 'r2',
+      local: {
+        // provider: 'local'
         uploadDir: process.env.NUXT_LOCAL_UPLOAD_DIR || './uploads',
         publicPath: process.env.NUXT_LOCAL_PUBLIC_PATH || '/uploads'
       },
-      r2: { // provider: 'r2'
+      r2: {
+        // provider: 'r2'
         accountId: process.env.NUXT_CF_ACCOUNT_ID!,
         accessKeyId: process.env.NUXT_CF_ACCESS_KEY_ID!,
         secretAccessKey: process.env.NUXT_CF_SECRET_ACCESS_KEY!,

@@ -1,10 +1,13 @@
-import { defineConfig } from 'drizzle-kit'
+import type { Config } from 'drizzle-kit'
 
-export default defineConfig({
-  dialect: 'postgresql',
+export default {
   schema: './server/database/schema/index.ts',
   out: './server/database/migrations',
+  dialect: 'sqlite',
+  driver: 'd1-http',
   dbCredentials: {
-    url: process.env.NUXT_DATABASE_URL!
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+    databaseId: process.env.CLOUDFLARE_DATABASE_ID!,
+    token: process.env.CLOUDFLARE_D1_TOKEN!
   }
-})
+} satisfies Config

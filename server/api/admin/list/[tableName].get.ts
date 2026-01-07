@@ -1,6 +1,6 @@
 import type { SQL } from 'drizzle-orm'
 import { and, asc, count, desc, getTableColumns } from 'drizzle-orm'
-import { PgTable } from 'drizzle-orm/pg-core'
+import { SQLiteTable } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
 import * as schema from '~~/server/database/schema'
 import { isValidTable } from '~~/server/utils/db'
@@ -92,7 +92,7 @@ export default eventHandler(async (event) => {
   }
 
   const table = schema[tableName]
-  if (!(table instanceof PgTable)) {
+  if (!(table instanceof SQLiteTable)) {
     throw createError(
       {
         statusCode: 400,

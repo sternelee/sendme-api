@@ -1,16 +1,18 @@
-import { pgTable, serial, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { user } from './auth'
 
-export const auditLog = pgTable('audit_log', {
-  id: serial('id').primaryKey(),
-  userId: uuid('user_id').references(() => user.id, { onDelete: 'set null' }),
-  category: text('category').notNull(), // e.g., 'auth', 'email', 'payment'
-  action: text('action').notNull(), // e.g., 'login', 'register', 'verification'
-  targetType: text('target_type'), // e.g., 'user', 'email'
-  targetId: text('target_id'), // ID of the target entity
+export const auditLog = sqliteTable('audit_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+  category: text('category').notNull(),
+  action: text('action').notNull(),
+  targetType: text('target_type'),
+  targetId: text('target_id'),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
-  status: text('status').notNull().default('success'), // e.g., 'success', 'failure', 'pending'
-  details: text('details'), // Additional details or error messages
-  createdAt: timestamp('created_at').notNull().$default(() => new Date())
+  status: text('status').notNull().default('success'),
+  details: text('details'),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date())
 })

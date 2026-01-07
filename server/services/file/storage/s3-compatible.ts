@@ -66,7 +66,11 @@ export class S3CompatibleStorageProvider implements StorageProvider {
     }
   }
 
-  async upload(file: Buffer, fileName: string, mimeType: string): Promise<{ path: string, url?: string }> {
+  async upload(
+    file: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<{ path: string, url?: string }> {
     this.ensureInitialized()
 
     const url = `${this.endpoint}/${this.bucketName}/${fileName}`
@@ -80,7 +84,9 @@ export class S3CompatibleStorageProvider implements StorageProvider {
     })
 
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `Upload failed: ${response.status} ${response.statusText}`
+      )
     }
 
     return {
@@ -99,7 +105,9 @@ export class S3CompatibleStorageProvider implements StorageProvider {
     })
 
     if (!response.ok && response.status !== 404) {
-      throw new Error(`Delete failed: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `Delete failed: ${response.status} ${response.statusText}`
+      )
     }
   }
 

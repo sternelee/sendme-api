@@ -1,10 +1,12 @@
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { v7 as uuidv7 } from 'uuid'
 import { user } from './auth'
 
-export const file = pgTable('file', {
-  id: uuid('id').primaryKey().$default(() => uuidv7()),
+export const file = sqliteTable('file', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   originalName: text('original_name').notNull(),
   fileName: text('file_name').notNull(),
   mimeType: text('mime_type').notNull(),
@@ -13,10 +15,14 @@ export const file = pgTable('file', {
   path: text('path').notNull(),
   url: text('url'),
   storageProvider: text('storage_provider').notNull(),
-  uploadedBy: uuid('uploaded_by'),
-  isActive: boolean('is_active').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
+  uploadedBy: text('uploaded_by'),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .$defaultFn(() => new Date())
+    .notNull()
 })
 
 export const fileRelations = relations(file, ({ one }) => ({

@@ -11,11 +11,16 @@ export class UploadRateLimiter {
 
   private getBucketKey(userId: string): string {
     const now = Date.now()
-    const bucketTimestamp = Math.floor(now / (this.windowSizeMinutes * 60 * 1000))
+    const bucketTimestamp = Math.floor(
+      now / (this.windowSizeMinutes * 60 * 1000)
+    )
     return `upload_rate_limit:${userId}:${bucketTimestamp}`
   }
 
-  async checkAndIncrement(userId: string, incrementBy: number = 1): Promise<{ allowed: boolean, currentCount: number }> {
+  async checkAndIncrement(
+    userId: string,
+    incrementBy: number = 1
+  ): Promise<{ allowed: boolean, currentCount: number }> {
     const bucketKey = this.getBucketKey(userId)
     const ttlSeconds = this.windowSizeMinutes * 60
 
